@@ -1,6 +1,7 @@
 from kivy.app import App  
 from kivy.core.window import Window
 
+from database import Database
 from widgets import MainWindow, TEAL    
 
 
@@ -10,7 +11,7 @@ class TodoApp(App):
     title = "Todo App"
 
     def build(self):
-        return MainWindow()
+        return MainWindow(db=Database())
     
 if __name__ == "__main__":
     todoapp = TodoApp()

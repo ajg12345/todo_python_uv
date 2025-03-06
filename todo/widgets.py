@@ -11,8 +11,9 @@ YELLOW = (1.0, 0.85, 0, 1.0)
 GREEN = (0.0, 1.0, 0.0, 1.0)
 
 class MainWindow(FloatLayout):
-    def __init__(self, **kwargs):
+    def __init__(self, db, **kwargs):
         super().__init__(**kwargs)
+        self.db = db
         todo_list_container = BoxLayout(
             orientation="vertical",
             size_hint=[.85, None],
@@ -35,7 +36,27 @@ class MainWindow(FloatLayout):
         todo_list_container.add_widget(self.scrollablelist)
 
         self.add_widget(todo_list_container)
-        
+
+    def add_todo_item(self, todo_item):
+        if todo_item.isspace() or todo_item == "":
+            return
+        self.db.add_todo_item(todo_item)
+        self.todoitems.clear_widgets()
+        self.show_existing_items()
+        self.inputframe.todo_input_widget.text = ""
+
+    def delete_todo_item(self, item_id):
+        for item in self.todoitems.children:
+            if item.item_id == item_id:
+                self.db.delete_todo_item(item_id)
+                item.parent.remove_widget(item)        
+    
+    def show_existing_items(self):
+        items = self.db.retrieve_all_items()
+        for item in reversed(items):
+            item_id, todo_item, done = item
+            item = Item(self, item_id, todo_item, done)
+            self.todoitems.add_widget(item)
 class Input(TextInput):
     max_length = 65
     multiline = False
@@ -61,11 +82,11 @@ class InputFrame(BoxLayout):
     height = 45
     size_hint_y = None
 
-    def __call__(self, main_window, **kwargs):
+    def __init__(self, main_window, **kwargs):
         super().__init__(**kwargs)
 
         self.todo_input_widget = Input(
-            hint_text="Enter a todo activity",
+            hint_text="Enter a todo activity", 
             font_size=22
         )
         self.todo_input_widget.padding = [10, 10, 10, 10]
@@ -101,3 +122,34 @@ class ScrollableList(ScrollView):
         self.todoitems.height = (ITEM_HEIGHT + SPACING) * (
             len(self.todoitems.children)
         ) - SPACING
+        
+class Item(BoxLayout):
+    size_hint = [1, None]
+    spacing = 5
+
+    def __init__(self, main_window, item_id, todo_item, done=False, **kwargs):
+        super().__init__(**kwargs)
+
+        self.height = 40
+        self.item_id = item_id
+        item_display_box = GreenButton(text=todo_item, size_hint=[0.6, 1])
+
+        self.mark_done_button = YellowButton(
+            text="Done", size_hint=[None, 1], width=100, disabled=done
+        )
+        self.mark_done_button.bind(
+            on_release=lambda *args: main_window.mark_as_done(item_id)
+        )
+
+        remove_button = YellowButton(
+            text="-",
+            size_hint=[None, 1], 
+            width=40
+        )
+        remove_button.bind(
+            on_release=lambda *args: main_window.delete_todo_item(item_id)
+        )
+
+        self.add_widget(item_display_box)
+        self.add_widget(self.mark_done_button)
+        self.add_widget(remove_button)
