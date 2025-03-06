@@ -45,6 +45,12 @@ class MainWindow(FloatLayout):
         self.show_existing_items()
         self.inputframe.todo_input_widget.text = ""
 
+    def mark_as_done(self, item_id):
+        for item in self.todoitems.children:
+            if item.item_id == item_id:
+                self.db.mark_as_done(item_id)
+                item.mark_done_button.disabled = True
+
     def delete_todo_item(self, item_id):
         for item in self.todoitems.children:
             if item.item_id == item_id:
