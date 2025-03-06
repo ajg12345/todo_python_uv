@@ -8,7 +8,7 @@ from kivy.uix.textinput import TextInput
 
 TEAL = (0, 0.31, 0.31, 1.0)
 YELLOW = (1.0, 0.85, 0, 1.0)
-GREEN = (0.0, 1.0, 0.0, 1.0)
+GREEN = (0.0, .5, 0.0, .8)
 
 class MainWindow(FloatLayout):
     def __init__(self, db, **kwargs):
@@ -59,10 +59,12 @@ class MainWindow(FloatLayout):
     
     def show_existing_items(self):
         items = self.db.retrieve_all_items()
+        
         for item in reversed(items):
             item_id, todo_item, done = item
             item = Item(self, item_id, todo_item, done)
             self.todoitems.add_widget(item)
+
 class Input(TextInput):
     max_length = 65
     multiline = False
@@ -115,12 +117,14 @@ class ScrollableList(ScrollView):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.height = 400
+        self.height = 4000
         self.todoitems = BoxLayout(
             orientation="vertical",
             size_hint_y = None,
             spacing=14
         )
+        self.todoitems.bind(children=self.adjust_height)
+        self.add_widget(self.todoitems)
 
     def adjust_height(self, *args):
         ITEM_HEIGHT = 40

@@ -1,9 +1,9 @@
 from kivy.app import App  
 from kivy.core.window import Window
+from kivy.logger import Logger, LOG_LEVELS
 
 from database import Database
 from widgets import MainWindow, TEAL    
-
 
 Window.clearcolor = TEAL
 
